@@ -7,7 +7,7 @@ description: "Security audit of Daml and Canton smart contracts while you develo
 
 You are the orchestrator of a Daml and Canton security audit.
 
-The threat model is not EVM-shaped. Focus on authorization, privacy, workflow integrity, contract-key semantics, time handling, and Canton operational assumptions.
+The threat model is not EVM-shaped. Focus on authorization, privacy, workflow integrity, business-logic and economic invariants, contract-key semantics, time handling, and Canton operational assumptions.
 
 ## Banner
 
@@ -79,6 +79,8 @@ Prioritize issues that let a party:
 5. bypass time, threshold, or business invariants
 6. break key uniqueness, lookup semantics, or multi-party agreement guarantees
 7. wedge the workflow through Canton topology or contention assumptions
+8. route value, fees, service-provider roles, operator roles, or approval roles differently from the configured or advertised workflow
+9. leave an advertised security-critical workflow branch unreachable, partially wired, or simulated only by events
 
 Do not waste time on EVM-only bug classes unless there is a true Daml analogue.
 
@@ -90,9 +92,12 @@ Read:
 
 - `daml.yaml` if present
 - `multi-package.yaml` if present
+- `README.md` if present
 - relevant `*.conf` Canton config files only if the audit question touches deployment or permissions
 
 Then discover in-scope `.daml` files using the mode rules above.
+
+If relevant scripts, UI handlers, or adjacent code exercise in-scope choices, read only the directly relevant callers to understand the advertised workflow, fee semantics, and expected role bindings.
 
 ### 2. Load core references
 
@@ -101,6 +106,7 @@ Always read these local references first:
 - [references/report-formatting.md](references/report-formatting.md)
 - [references/judging.md](references/judging.md)
 - [references/attack-vectors/attack-vectors.md](references/attack-vectors/attack-vectors.md)
+- [references/business-logic-checks.md](references/business-logic-checks.md)
 
 Read [references/sources.md](references/sources.md) when you need primary-source refreshers or links.
 
@@ -159,6 +165,11 @@ When a candidate depends on a concrete party flow, trace:
 3. who must authorize
 4. whether the action consumes state, changes state, or only discloses data
 
+For business-logic candidates, also trace:
+
+5. whether value actually moves on-ledger or is only recorded in an event or return value
+6. whether caller-supplied role/config parameters are bound to authoritative template state
+
 ### 7. Validate against surrounding code
 
 For findings that survive judging:
@@ -183,6 +194,9 @@ If `--file-output` is present, also write `daml-audit-report.md`.
 - Do not assume `fetch`, `fetchByKey`, `lookupByKey`, and explicit disclosure have interchangeable authorization behavior.
 - Do not assume caller-supplied timestamps are trustworthy when `getTime` is available.
 - Do not assume a party who saw a contract through divulgence has durable knowledge of its future state.
+- Do not treat an emitted event or returned data record as economic settlement unless the ledger actually creates, archives, or transfers the relevant rights.
+- Compare every role-like or config-like choice argument against the template's stored fields. Shadowed or redundant parameters are a hotspot.
+- Use README, comments, scripts, and adjacent modules as evidence of intended workflow only after confirming what the on-ledger code truly allows.
 - Do not promote "missing test" to a finding unless it hides a real security property gap.
 - Findings must be concrete and exploitable within Daml and Canton semantics, not generic lint.
 
@@ -197,6 +211,10 @@ Good findings usually look like one of these:
 - `fetchByKey` or `lookupByKey` logic assumes visibility that the caller does not actually have
 - duplicate signers or voters collapse a threshold or quorum model
 - a choice uses caller-supplied time and lets someone fast-forward or backdate vesting, cancellation, timeout, or settlement
+- a fee or payment check records value in an event but never settles it on-ledger
+- a choice accepts an operator, processor, manager, approver, or owner argument without binding it to stored configuration
+- a single operator can choose between mutually exclusive settlement outcomes after another party has already committed value
+- an advertised workflow branch exists in modules or callers but no reachable on-ledger path can instantiate it
 - a workflow can become permanently stuck because a state transition or recovery path is missing
 
 ## What Bad Findings Look Like
@@ -207,4 +225,5 @@ Reject or demote reports that rely on:
 - hypothetical attackers who cannot see or authorize the referenced contracts
 - compile-time type errors presented as vulnerabilities
 - privacy claims that ignore Daml's witness and divulgence rules
+- generic "missing feature" complaints without a concrete workflow integrity or security consequence
 - vague "centralization" complaints without a violated invariant or trust boundary

@@ -8,6 +8,7 @@ You map the code to known Daml workflow patterns and look for unsafe deviations.
 - Multiple Party Agreement
 - Authorization
 - Delegation
+- Cross-System Settlement and Service Mediation
 - Locking and safekeeping
 - Escrow
 - Multisig
@@ -18,10 +19,15 @@ You map the code to known Daml workflow patterns and look for unsafe deviations.
 ## Hunt For
 
 - direct creation of a multi-party agreement that should have been proposed and accepted
+- agreement, workflow, or safety-wrapper variants that are declared but unreachable from the advertised entry points
 - locking patterns that fail to disable the risky choices
+- cross-system or multi-step settlement flows where unlock, refund, liquidation, fulfillment, or seizure are not tied to verifiable state
+- fee or incentive models enforced only socially or off-ledger
+- stored configuration templates whose fields are bypassed by dynamic choice inputs
 - governance or multisig workflows missing unique-participant or deadline guarantees
 - asset patterns where issuer, owner, and delegate roles are blurred
 
 ## Best Use
 
 This lens is especially valuable when the code appears "clean" but subtly departs from a standard Daml pattern in a way that changes the trust model.
+Cross-check code structure against README claims and directly relevant scripts or UI handlers when they advertise a stronger workflow than the ledger actually wires in.

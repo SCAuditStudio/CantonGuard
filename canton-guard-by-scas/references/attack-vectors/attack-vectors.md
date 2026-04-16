@@ -12,6 +12,9 @@ Daml removes many low-level EVM bugs. The audit question is usually:
 - who can see the data?
 - who can replay the action?
 - who can recover if the workflow stalls?
+- where does value actually move, and what is only recorded in an event?
+- which stored configuration fields are truly enforced?
+- is the advertised workflow actually reachable from on-ledger entry points?
 
 ## 1. Stakeholder and Signatory Design
 
@@ -80,7 +83,42 @@ Typical impact:
 - over-claim or over-release
 - malformed state that later choices cannot handle safely
 
-## 5. Privacy, Witnesses, and Divulgence
+## 5. Stored Configuration versus Caller Input
+
+Look for choices that accept role-like or config-like values even though the template already stores them.
+
+Questions:
+
+- Does the choice accept `operator`, `processor`, `provider`, `manager`, `approver`, `owner`, or similar from the caller?
+- Is the supplied value checked against the template's stored field?
+- Can the caller reroute workflow through an unintended operator, processor, service-provider, or approver?
+- Are redundant parameters likely to create a second, non-authoritative source of truth?
+
+Typical impact:
+
+- operator or service-role substitution
+- authorization laundering through caller-supplied config
+- operational misconfiguration because integrators trust the wrong field
+
+## 6. Economic Settlement and Event-Only Logic
+
+Look for code that talks about payment, fees, or value transfer but only emits data.
+
+Questions:
+
+- Does the code enforce a fee or amount without moving any on-ledger asset or right?
+- Is a `value` copied into an event while no settlement occurs?
+- Does `>=` allow overpayment, and if so, where is the refund path?
+- Are comments, README text, or UI labels implying a stronger accounting guarantee than the ledger code provides?
+
+Typical impact:
+
+- unpaid service providers or processors
+- phantom fee enforcement
+- silent user overpayment
+- broken incentive model
+
+## 7. Privacy, Witnesses, and Divulgence
 
 Mixed-party transactions deserve special attention.
 
@@ -97,7 +135,7 @@ Typical impact:
 - confidential pricing or position disclosure
 - silent expansion of who can inspect sensitive state
 
-## 6. Contract Keys and Visibility by Key
+## 8. Contract Keys and Visibility by Key
 
 Audit every keyed template and every `lookupByKey` or `fetchByKey`.
 
@@ -115,7 +153,7 @@ Typical impact:
 - invisible contracts mistaken for absent contracts
 - logic branches that mint duplicates or bypass authorization because lookups fail closed
 
-## 7. Time and External Inputs
+## 9. Time and External Inputs
 
 Any business-critical time gate should be traced carefully.
 
@@ -132,7 +170,7 @@ Typical impact:
 - cancellation after outcome is known
 - refund or settlement race conditions
 
-## 8. State Machine Completeness
+## 10. State Machine Completeness
 
 Look for proposal, funded, disputed, released, revoked, expired, cancelled, or tallied states.
 
@@ -142,14 +180,18 @@ Questions:
 - Can assets or rights become stuck with no authorized exit?
 - Can a contract enter a state that no controller can progress?
 - Is there a recovery path after timeout or dispute?
+- Are mutually exclusive terminal outcomes tied to verifiable state, proof, or timeout?
+- Can one operator decide between release, liquidation, refund, or seizure after a counterparty has already committed value?
 
 Typical impact:
 
 - stuck funds
 - permanent workflow denial of service
 - business dead ends
+- unilateral settlement outcome selection
+- premature liquidation or seizure
 
-## 9. Quorum and Set Semantics
+## 11. Quorum and Set Semantics
 
 Threshold systems often fail because lists are treated as sets without enforcement.
 
@@ -165,7 +207,7 @@ Typical impact:
 - duplicate approvals
 - governance bypass
 
-## 10. Canton Operational Assumptions
+## 12. Canton Operational Assumptions
 
 These are often not code bugs by themselves, but they matter for real exploitability and denial of service.
 
@@ -191,19 +233,37 @@ Typical impact:
 - false assumptions in off-ledger orchestration
 - race-prone settlement or transfer handling
 
-## 11. Pattern-Specific Checks
+## 13. Feature Reachability and Partial Wiring
+
+Some real bugs are missing or orphaned workflow branches rather than broken single choices.
+
+Questions:
+
+- Do sibling modules, comments, README text, or callers advertise a workflow that no reachable choice can instantiate?
+- Is only one branch of a family of proposals, agreements, or safety wrappers wired into the public entry points?
+- Does an "emergency", "restricted", or "safe" flow exist only as dead-end code while production callers use a weaker path?
+
+Typical impact:
+
+- business-critical workflow unavailable in production
+- false assumptions by integrators and operators
+- security properties present in code comments but absent in live flows
+
+## 14. Pattern-Specific Checks
 
 ### Access control
 
 - self-grant or self-approval edge cases
 - admin can silently rewrite roles without counterparty acknowledgement
 - observer/signatory mismatch on role receipts
+- caller-supplied operator, processor, manager, or approver not bound to stored configuration
 
 ### Escrow and safekeeping
 
 - no refund path after timeout
 - release or dispute reachable before deposit
 - beneficiary or payer can force an unintended terminal path
+- one operator can choose between refund and seizure without proof or timeout
 
 ### Multisig
 
@@ -237,8 +297,10 @@ Typical impact:
 - issuer can archive live assets at will
 - transfer proposal bypasses recipient acceptance
 - locking workflow does not actually lock the risky choices
+- a fee check creates an event but no actual payment
+- overpayment is accepted without refund or explicit semantics
 
-## 12. Tests That Should Usually Exist
+## 15. Tests That Should Usually Exist
 
 Strong Daml security reviews usually expect:
 
@@ -248,3 +310,7 @@ Strong Daml security reviews usually expect:
 - duplicate-list tests for multisig, voting, or delegates
 - negative-value, zero-value, and over-claim tests
 - recovery-path tests for expiry, refund, or dispute flows
+- config-binding tests that caller-supplied operator or service role matches stored configuration
+- exact-fee and overpayment tests where payment semantics matter
+- reachability tests for every advertised workflow branch, agreement type, or safety wrapper
+- exclusivity tests for mutually exclusive settlement outcomes

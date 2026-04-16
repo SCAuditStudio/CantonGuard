@@ -31,12 +31,16 @@ Acceptable consequences include:
 - replay of a one-shot action
 - sensitive data disclosure through observers, choice observers, divulgence, or explicit disclosure misuse
 - stuck state, lost recovery path, or broken threshold logic
+- economically meaningful mismatch between checked fees or values and actual on-ledger settlement
+- operator, processor, approver, or manager substitution that reroutes workflow or breaks policy assumptions
+- an advertised security-critical workflow branch is unreachable or only partially wired
 
 Reject candidates that only describe:
 
 - stylistic issues
 - expected failures
 - harmless alternate modeling choices
+- cosmetic API awkwardness with no workflow or security consequence
 
 ## Gate 3: Daml and Canton Semantics
 
@@ -48,6 +52,8 @@ Check:
 - stakeholder and witness propagation
 - key maintainer authorization
 - `getTime` versus caller-supplied time
+- event emission or returned data versus actual contract or value movement
+- caller-supplied role or config values versus authoritative template state
 - domain and informee constraints
 - contention and stale-contract behavior
 
@@ -64,6 +70,9 @@ Prefer findings that can:
 - leak commercially sensitive data
 - wedge core workflows repeatedly
 - create governance or threshold bypass
+- let one operator choose mutually exclusive settlement outcomes
+- create unpaid-service, overpayment, or phantom-settlement conditions
+- break an advertised production workflow that operators depend on for safety
 
 Demote to lead if the issue is theoretically real but narrow, heavily preconditioned, or poorly evidenced.
 

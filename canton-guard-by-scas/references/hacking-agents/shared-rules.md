@@ -33,6 +33,7 @@ For weaker candidates use `LEAD` with the same fields, but set `severity:` to `n
 - Stay inside Daml and Canton semantics.
 - Name the exact template, choice, field, key, or helper contract involved.
 - Explain the party flow: who sees what, who controls what, who can submit.
+- Distinguish event emission, returned records, and comments from actual contract or value movement.
 - Prefer one strong finding over five generic maybes.
 
 ## Severity Heuristics
@@ -51,6 +52,7 @@ Reject anything that:
 - ignores required `actAs` parties
 - mistakes `lookupByKey = None` for proof of non-existence
 - is only a missing test
+- is only a product gap with no concrete workflow integrity, economic, or authorization consequence
 
 ## Fix Guidance
 
@@ -62,3 +64,6 @@ Keep fixes minimal and Daml-native:
 - replace caller-supplied time with `getTime`
 - add `ensure`, `assert`, or deduplication guards
 - split mixed-party workflows to avoid accidental disclosure
+- bind caller-supplied operator or service-role arguments to stored template fields
+- replace event-only fee checks with real settlement or explicit off-ledger semantics
+- remove redundant parameters or validate them against authoritative state
