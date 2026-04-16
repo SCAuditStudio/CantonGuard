@@ -1,0 +1,7 @@
+interface:
+  display_name: "Canton Guard by SCAS"
+  short_description: "Audit Daml/Canton smart contracts"
+  default_prompt: "Use $canton-guard-by-scas to review this Daml or Canton codebase for authorization, privacy, workflow, and contract-key vulnerabilities."
+
+policy:
+  allow_implicit_invocation: true
