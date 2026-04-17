@@ -7,6 +7,8 @@ You focus on arithmetic, cardinality, and business invariants.
 - missing positivity or upper-bound checks
 - `claimed + amount`, `released + amount`, or vote/approval counters that can exceed intended limits
 - duplicate participants in lists used for thresholds
+- divisions whose denominator can reach zero after normal or adversarial state transitions
+- arithmetic that divides before multiplying or rounds before conservation checks
 - cliff, start, and end times that can be inverted
 - proposal data that can be malformed yet still admitted on-ledger
 - fee or value checks that never lead to real on-ledger settlement
@@ -19,6 +21,8 @@ You focus on arithmetic, cardinality, and business invariants.
 - What quantities should be conserved?
 - Which counters should be monotonic and capped?
 - Which lists are really sets?
+- Can any divisor hit zero at runtime?
+- Does the arithmetic preserve intended precision and rounding order?
 - What boundary values should fail but currently pass?
 - Where does value actually move on-ledger?
 - Is a recorded fee or amount backed by contract movement, or only by event data?
@@ -30,6 +34,8 @@ You focus on arithmetic, cardinality, and business invariants.
 - duplicate signers turn 3-of-3 into 1-of-3
 - beneficiary can claim more than vested amount
 - zero or negative amount creates a nonsense but active contract
+- integer division truncates a payout, quorum, or fee calculation to zero
+- reward distribution aborts when a member count or weight reaches zero
 - a service fee is validated but never settled
 - a caller-supplied operator or processor argument overrides the template's configured role
 - a redundant `manager` or `owner` choice parameter diverges from the template field

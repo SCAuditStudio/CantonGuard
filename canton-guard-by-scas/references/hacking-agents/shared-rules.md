@@ -60,10 +60,12 @@ Keep fixes minimal and Daml-native:
 
 - strengthen `signatory` or `observer` design
 - add a propose-accept or pending-agreement step
-- change `nonconsuming` to consuming where appropriate
+- choose consuming versus `nonconsuming` intentionally for the business action
 - replace caller-supplied time with `getTime`
 - add `ensure`, `assert`, or deduplication guards
 - split mixed-party workflows to avoid accidental disclosure
 - bind caller-supplied operator or service-role arguments to stored template fields
 - replace event-only fee checks with real settlement or explicit off-ledger semantics
 - remove redundant parameters or validate them against authoritative state
+- prefer stable keys or same-transaction validation over long-lived stored `ContractId` references
+- bound delegation depth and require renewed consent for upgrades or new obligations

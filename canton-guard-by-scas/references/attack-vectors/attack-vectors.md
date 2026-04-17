@@ -24,6 +24,8 @@ Questions:
 
 - Can one party archive the contract unilaterally?
 - Does a workflow need a propose-accept or pending-agreement wrapper before a multi-party contract is created?
+- Can a choice create a new contract naming another party as signatory, debtor, issuer, or obligor without that party taking a fresh acceptance step?
+- Could a party be lured into becoming a signatory on a template whose sibling choices later spend that authority against them?
 - Is a receipt or result contract signed only by the initiator when multiple parties rely on it as proof?
 
 Typical impact:
@@ -31,6 +33,7 @@ Typical impact:
 - unilateral archival
 - off-ledger obligations without on-ledger protection
 - one party can rewrite or erase another party's state
+- signatory bait or obligation creation without fresh consent
 
 ## 2. Controller and Delegation Confusion
 
@@ -40,6 +43,8 @@ Questions:
 
 - Does the controller match the intended principal?
 - Is a delegated actor constrained to a narrow action, or can they launder broader authority?
+- Does a low-privilege controller exercise a choice body that creates or archives contracts using a higher-privilege signatory's authority?
+- Can a delegate recursively sub-delegate or reassign approvers without depth, allowlist, or separation-of-duties checks?
 - Can a helper contract be used to act on behalf of a party that never explicitly approved this exact action?
 
 Typical impact:
@@ -47,6 +52,8 @@ Typical impact:
 - privilege escalation
 - authority laundering
 - exercising a legitimate choice for an illegitimate business purpose
+- signatory-authority smuggling
+- unbounded delegation or approver-capture
 
 ## 3. Consuming versus Nonconsuming Choices
 
@@ -57,6 +64,8 @@ Questions:
 - Should this choice be one-shot?
 - Does replay create duplicated payments, claims, or approvals?
 - Does the contract stay active after an action that sounds terminal?
+- Is this choice actually read-only, query-like, or comment-like and therefore supposed to be `nonconsuming`?
+- Does the choice archive a contract and fail to recreate the successor right it just destroyed?
 
 Typical impact:
 
@@ -64,6 +73,8 @@ Typical impact:
 - repeatable settlement
 - double-claim
 - duplicated governance actions
+- accidental archival by query
+- asset destruction via archive-without-reissue
 
 ## 4. Missing Preconditions and Weak Invariants
 
@@ -74,6 +85,8 @@ Questions:
 - Are amounts positive and bounded?
 - Are lists deduplicated where thresholds depend on list cardinality?
 - Can `claimed`, `released`, `yesVotes`, `approvals`, or other cumulative counters exceed the intended limit?
+- Can any divisor reach zero during normal or adversarial execution?
+- Does arithmetic divide before multiplying, truncate too early, or round in a way that breaks the intended threshold or payout?
 - Do deadline or cliff relationships hold?
 
 Typical impact:
@@ -82,6 +95,8 @@ Typical impact:
 - negative or zero-value abuse
 - over-claim or over-release
 - malformed state that later choices cannot handle safely
+- distribution aborts or permanent DoS
+- precision loss in fee, quorum, or pro-rata logic
 
 ## 5. Stored Configuration versus Caller Input
 
@@ -128,12 +143,14 @@ Questions:
 - Does exercising a choice force disclosure of a private contract to a party that only needed to trigger the workflow?
 - Is the design relying on accidental divulgence rather than explicit modeling?
 - Would explicit contract disclosure be safer than `fetch` inside a mixed-party transaction?
+- Can notification timing or trigger behavior reveal business activity even when the payload stays private?
 
 Typical impact:
 
 - trade detail leakage
 - confidential pricing or position disclosure
 - silent expansion of who can inspect sensitive state
+- timing-based activity inference
 
 ## 8. Contract Keys and Visibility by Key
 
@@ -146,12 +163,15 @@ Questions:
 - Does the caller actually satisfy `visibleByKey`?
 - Does the code treat `None` from `lookupByKey` as "does not exist" when the real issue is "not visible to this caller"?
 - Are key-based uniqueness assumptions still valid across participants or with explicit disclosure?
+- Can concurrent submissions both observe `None` and create the same keyed right through a nonconsuming service path?
+- Does the code unwrap `lookupByKey` or `fetchByKey` results in a way that turns normal absence into a workflow-killing abort?
 
 Typical impact:
 
 - broken uniqueness assumptions
 - invisible contracts mistaken for absent contracts
 - logic branches that mint duplicates or bypass authorization because lookups fail closed
+- runtime aborts when keyed targets are absent or concurrently archived
 
 ## 9. Time and External Inputs
 
@@ -160,6 +180,7 @@ Any business-critical time gate should be traced carefully.
 Questions:
 
 - Does the choice accept `currentTime`, `now`, or `deadline` from the caller instead of using `getTime`?
+- Even when using `getTime`, can ledger-time skew near a deadline let a submitter sneak through a boundary?
 - Can a party fast-forward claims, unlocks, cancellations, or revocations?
 - Are before/after deadline checks symmetric across execution and cancellation paths?
 
@@ -169,6 +190,7 @@ Typical impact:
 - backdated revocation
 - cancellation after outcome is known
 - refund or settlement race conditions
+- boundary-time bypass within the tolerated skew window
 
 ## 10. State Machine Completeness
 
@@ -182,6 +204,9 @@ Questions:
 - Is there a recovery path after timeout or dispute?
 - Are mutually exclusive terminal outcomes tied to verifiable state, proof, or timeout?
 - Can one operator decide between release, liquidation, refund, or seizure after a counterparty has already committed value?
+- Are long-lived stored `ContractId` references used after the referenced contract could have been archived or replaced?
+- Do upgrade or migration choices preserve counterparty consent and material terms?
+- Can a nonconsuming choice be spammed to flood triggers, comments, or downstream automation?
 
 Typical impact:
 
@@ -190,6 +215,9 @@ Typical impact:
 - business dead ends
 - unilateral settlement outcome selection
 - premature liquidation or seizure
+- stale-reference failure or replacement confusion
+- upgrade hijack
+- operational DoS through choice spam
 
 ## 11. Quorum and Set Semantics
 
@@ -257,6 +285,24 @@ Typical impact:
 - admin can silently rewrite roles without counterparty acknowledgement
 - observer/signatory mismatch on role receipts
 - caller-supplied operator, processor, manager, or approver not bound to stored configuration
+
+### Upgrades and migrations
+
+- unilateral archive-and-recreate flows without counterparty re-acceptance
+- material term drift during upgrade or migration
+- stale references to pre-upgrade contracts that are reused after migration
+
+### Read-only and service choices
+
+- query, preview, or lookup choices left consuming
+- service or registry entry points that are nonconsuming and race keyed creation
+- nonconsuming spam surfaces that create unbounded notes, comments, or requests
+
+### Arithmetic and distributions
+
+- divide-before-multiply payout or threshold logic
+- zero-member, zero-weight, or zero-supply divisions
+- rounding or truncation that breaks conserved-value expectations
 
 ### Escrow and safekeeping
 

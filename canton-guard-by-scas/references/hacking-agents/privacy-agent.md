@@ -8,6 +8,7 @@ You focus on observers, witnesses, divulgence, and explicit disclosure.
 - mixed-party choices that `fetch` or `exercise` private contracts and reveal details to a facilitator or operator
 - logic that relies on temporary divulgence as if it were durable authorization
 - key lookups by parties who are not visible-by-key stakeholders
+- workflows where notification timing or trigger side effects can reveal private business activity
 
 ## Questions
 
@@ -15,6 +16,7 @@ You focus on observers, witnesses, divulgence, and explicit disclosure.
 - Does a controller learn more than they need to perform their role?
 - Is explicit contract disclosure a safer model than on-transaction fetches?
 - Does the code accidentally convert "can trigger" into "can inspect"?
+- Could a party infer a hidden event from the timing or cadence of related contracts or triggers?
 
 ## Report Only Concrete Leaks
 

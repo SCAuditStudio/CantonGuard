@@ -10,9 +10,12 @@ Find issues that are obvious in hindsight but easy to miss while coding:
 
 - unilateral archival
 - repeatable one-shot actions
+- signatory-authority smuggling
 - missing recovery paths
 - duplicate-set threshold bugs
 - caller-supplied time
+- stale-contract references
+- zero-divisor or truncation-sensitive arithmetic
 - over-broad observers or controller sets
 - event-only fee or payment logic
 - caller-supplied config that is not bound to stored state
@@ -29,9 +32,13 @@ Find issues that are obvious in hindsight but easy to miss while coding:
 Raise confidence when:
 
 - a choice name sounds terminal but the contract remains active
+- a query or lookup-style choice archives the contract
 - a counterparty is only an observer on a value-bearing agreement
+- a choice controlled by one party creates a contract that binds another party to a new obligation
 - a threshold depends on list length without deduplication
 - a workflow has a timeout but no post-timeout recovery
+- a service or registry choice checks a key and creates on the `None` branch without serializing access
+- a long-lived stored `ContractId` is used for critical settlement instead of same-transaction validation
 - a role or service-processor is passed into a choice even though the template already stores it
 - a `value` or `fee` field only appears in an event or return value, never in settlement logic
 - a sibling proposal or lock module exists but no reachable public choice can create it
