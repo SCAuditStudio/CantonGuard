@@ -107,6 +107,7 @@ Always read these local references first:
 - [references/judging.md](references/judging.md)
 - [references/attack-vectors/attack-vectors.md](references/attack-vectors/attack-vectors.md)
 - [references/business-logic-checks.md](references/business-logic-checks.md)
+- [references/vuln-checklist.md](references/vuln-checklist.md)
 
 Read [references/sources.md](references/sources.md) when you need primary-source refreshers or links.
 

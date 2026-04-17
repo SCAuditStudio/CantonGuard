@@ -24,6 +24,7 @@ Find issues that are obvious in hindsight but easy to miss while coding:
 ## Working Style
 
 - Sweep all templates and choices once.
+- Do one explicit pass over the secondary vulnerability checklist so every named pattern is considered at least once.
 - Prefer root-cause findings that explain several downstream symptoms.
 - If a module implements a known pattern, compare it against the safer Daml pattern mentally.
 
