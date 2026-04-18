@@ -1,1 +1,3 @@
-A Security AI agent For Identifying Vulnerabilities in DAML Smart Contracts by SC Audit Studio
+# CantonGuard
+
+A Claude/Codex security agent for identifying vulnerabilities in Daml smart contracts and Canton workflows by SC Audit Studio.
