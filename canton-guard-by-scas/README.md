@@ -8,6 +8,10 @@ Built for:
 - Canton teams reviewing authorization, privacy, and contract-key logic
 - Security researchers looking for fast, Daml-native audit hypotheses before manual review
 
+## Installation
+Open claude/codex and paste this prompt
+```Install this skill: https://github.com/SCAuditStudio/CantonGuard```
+
 ## Usage
 
     Use $canton-guard-by-scas to review the codebase
