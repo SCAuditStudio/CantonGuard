@@ -153,9 +153,20 @@ Deduplicate candidate issues by:
 
 Merge synonymous reports if they describe the same root cause.
 
-### 6. Judge once
+### 6. Adversarial validation
 
-Run every deduplicated issue through the four gates in [references/judging.md](references/judging.md).
+Treat every lens output as an untrusted hypothesis until it survives validation.
+
+Run every deduplicated issue through the validation gates in [references/judging.md](references/judging.md).
+
+For each candidate, first build a compact validation note:
+
+- claim boundary: intended invariant, alleged break, and any reporter scenario or test case
+- reachable actors: who can see, submit, authorize, and disclose the referenced contracts
+- touched state: templates, choices, keys, fields, events, contract IDs, and ledger actions read or written
+- state trace: active contracts before, transaction sequence, and active contracts or visibility after
+- blockers: Daml/Canton semantics, guards, imports, tests, or workflow steps that would invalidate the claim
+- confidence: integer `0-100` with the main reason for that score
 
 Evaluate each candidate once. Do not keep re-opening the same path until it becomes true.
 
@@ -171,6 +182,8 @@ For business-logic candidates, also trace:
 5. whether value actually moves on-ledger or is only recorded in an event or return value
 6. whether caller-supplied role/config parameters are bound to authoritative template state
 
+Promote only if the state trace shows a complete successful ledger path and the strongest counter-evidence does not block it. Demote to a lead when the path is plausible but missing code, configuration, or a concrete transaction sequence.
+
 ### 7. Validate against surrounding code
 
 For findings that survive judging:
@@ -178,6 +191,7 @@ For findings that survive judging:
 - read adjacent imported modules
 - read relevant tests or Daml Script files if they clarify intended behavior
 - verify whether a guard already exists elsewhere in the workflow
+- check whether an alternative intended workflow makes the reported behavior expected rather than vulnerable
 
 Tests may confirm intent, but they do not override what production code allows.
 
@@ -200,6 +214,8 @@ If `--file-output` is present, also write `daml-audit-report.md`.
 - Use README, comments, scripts, and adjacent modules as evidence of intended workflow only after confirming what the on-ledger code truly allows.
 - Do not promote "missing test" to a finding unless it hides a real security property gap.
 - Findings must be concrete and exploitable within Daml and Canton semantics, not generic lint.
+- Do not report a finding without a concrete transaction sequence and a clear before/after ledger or visibility change.
+- Include the strongest counter-evidence you checked; if it defeats the claim, reject or demote instead of reporting around it.
 
 ## What Good Findings Look Like
 

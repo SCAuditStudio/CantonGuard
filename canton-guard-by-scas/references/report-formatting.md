@@ -25,13 +25,17 @@ Use this structure for every accepted finding:
 - Area: short label such as `authorization`, `privacy`, `contract-key`, `state-machine`, `time`, `quorum`
 - Group key: `Template | choice-or-operation | bug-class`
 - Location: file path and the smallest useful template or choice name
-- Exploitability: who can do it, with what preconditions
+- Claim check: intended invariant versus the actual ledger behavior
+- Preconditions: external setup, active contracts, parties, and required visibility
+- Attack path: concrete transaction sequence, including submitter and `actAs` parties
+- State change: before/after state, including creates, archives, disclosures, or value movement
 - Impact: concrete user or protocol consequence
 - Why it works: the exact Daml or Canton rule the code violates or misunderstands
+- Counter-evidence checked: strongest guard, semantic rule, test, or workflow assumption that was considered and why it does not block the issue
 - Minimal fix: the shortest safe remediation direction
 - Suggested tests: `submitMustFail`, boundary-time, negative authorization, replay, or invariant tests as appropriate
 
-Keep each finding compact. Prefer evidence over narrative.
+Keep each finding compact. Prefer evidence over narrative. Do not include a finding if you cannot fill in the attack path and state change without guessing.
 
 ## Leads Section
 
@@ -45,6 +49,7 @@ For each lead:
 
 - Title
 - Why it might matter
+- Failed validation gate or missing evidence
 - What evidence is still missing
 
 ## Coverage Notes

@@ -18,9 +18,11 @@ confidence:
 group_key:
 bug_class:
 location:
-summary:
-why_it_works:
-attack_story:
+claim:
+preconditions:
+state_trace:
+why_runtime_allows_it:
+counter_evidence:
 impact:
 fix_sketch:
 tests:
@@ -35,6 +37,8 @@ For weaker candidates use `LEAD` with the same fields, but set `severity:` to `n
 - Explain the party flow: who sees what, who controls what, who can submit.
 - Distinguish event emission, returned records, and comments from actual contract or value movement.
 - Prefer one strong finding over five generic maybes.
+- Try to disprove each candidate before emitting it. If you cannot name the pre-state, transaction, and post-state, emit a `LEAD` or omit it.
+- Mention the strongest counter-evidence inside `counter_evidence`, even when it does not defeat the claim.
 
 ## Severity Heuristics
 
@@ -43,14 +47,15 @@ For weaker candidates use `LEAD` with the same fields, but set `severity:` to `n
 - `Medium`: meaningful workflow break, time bypass, or denial of service
 - `Low`: narrow but real weakness with concrete impact
 
-## Reject Fast
+## Reject Or Downgrade Fast
 
-Reject anything that:
+Do not emit a `FINDING` for anything that:
 
 - sounds like a Solidity issue with no Daml analogue
 - depends on invisible contracts becoming visible magically
 - ignores required `actAs` parties
 - mistakes `lookupByKey = None` for proof of non-existence
+- cannot be expressed as a concrete ledger transaction sequence
 - is only a missing test
 - is only a product gap with no concrete workflow integrity, economic, or authorization consequence
 
